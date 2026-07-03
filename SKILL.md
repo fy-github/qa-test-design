@@ -315,6 +315,24 @@ Read [references/ai-output-review.md](references/ai-output-review.md) and explic
 - duplication
 - culture/common-sense fit
 
+### 9. Capture reusable conclusions into the local knowledge base when approved
+
+When a testcase-design, case-review, requirement-review, traceability, or risk task produces reusable conclusions, read [references/local-knowledge-base.md](references/local-knowledge-base.md) and decide whether the result should be captured as a library-style local knowledge note.
+
+This step should happen after the final artifact or final review conclusion is stable, not before.
+
+Required behavior:
+
+- treat the local knowledge base like a library catalog, not a chat transcript
+- capture file paths, final artifacts, reusable rules, cross-feature relationships, and unresolved questions
+- write concise searchable notes that help future work find nearby materials first, then expand by relationship instead of guessing
+
+Write gate:
+
+- automatically write the local knowledge-base note only when the current session includes explicit user approval to persist this knowledge locally
+- if that approval is missing, prepare a concise candidate summary but do not write to the local memory store
+- do not treat ordinary skill invocation alone as permission to write persistent memory
+
 ## Output Modes
 
 ### Test Points Mode
@@ -487,6 +505,8 @@ Output:
 - Always include main flow, alternate flow, exception flow, and boundary coverage when applicable.
 - For user/role/permission systems, always cover actor-permission-state combinations.
 - If the requirement is not testable enough, say so explicitly instead of pretending the ambiguity does not matter.
+- Do not write to the local persistent knowledge base unless the current session includes explicit user approval for local persistence. If the skill has reusable conclusions but no such approval, keep them as a candidate summary only.
+- When local persistence is approved, write one concise library-style note under the local Codex memory root at `extensions/ad_hoc/notes/` according to [references/local-knowledge-base.md](references/local-knowledge-base.md) instead of scattering conclusions across chat only.
 
 ## Format Routing
 
@@ -521,6 +541,8 @@ Before concluding any task that used this skill:
 3. if reusable and not already captured, prepare a concise proposed skill update for human review
 4. only after explicit human approval may the skill package be updated
 5. mention in the final response when a proposed learning item was identified and whether it was approved into the skill
+6. if the current session includes explicit approval for local knowledge capture and the task produced reusable conclusions, write the final library-style knowledge note described in [references/local-knowledge-base.md](references/local-knowledge-base.md)
+7. if approval for local persistence is missing, mention whether a reusable candidate summary exists but was intentionally not written
 
 Typical items that should be proposed for skill evolution:
 
@@ -552,6 +574,7 @@ If the user asks only for one artifact, output only that artifact plus the minim
 - [references/ai-output-review.md](references/ai-output-review.md)
 - [references/output-formats.md](references/output-formats.md)
 - [references/few-shot-examples.md](references/few-shot-examples.md)
+- [references/local-knowledge-base.md](references/local-knowledge-base.md)
 
 
 
