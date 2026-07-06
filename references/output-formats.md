@@ -19,6 +19,8 @@ Recommended tabs:
 
 `评审建议` is mandatory for case-review deliverables. For newly generated case libraries with no review findings yet, include the sheet with only headers or leave it ready for later review entries.
 
+`质量评分` is optional. Add it only when the user asks for quantified review, scoring, quality rating, or a case-quality portrait. It summarizes case quality and must trace low scores back to `评审建议`; it does not replace the review findings sheet.
+
 Recommended `全部用例` columns and order:
 
 | Column | Required | Notes |
@@ -62,6 +64,24 @@ Recommended `评审建议` columns and order:
 | 处理人 | 可选 | 处理责任人 |
 | 处理日期 | 可选 | 处理日期 |
 | 处理备注 | 可选 | 处理结果或保留原因 |
+
+Optional `质量评分` columns and order, only when scoring is enabled:
+
+| Column | Required | Notes |
+|--------|----------|-------|
+| 用例ID | 是 | 与被评分用例对齐 |
+| 所属Sheet | 是 | 通常为 `全部用例` 或被评审的具体模块 sheet |
+| 总分 | 是 | 0-100 |
+| 质量等级 | 是 | `可执行` / `需修订` / `不建议执行` / `需重写` |
+| 逻辑完整性 | 是 | 默认满分 25 |
+| 预期明确性 | 是 | 默认满分 20 |
+| 前置条件 | 是 | 默认满分 15 |
+| PRD覆盖度 | 是 | 默认满分 25 |
+| 边界异常覆盖 | 是 | 默认满分 15 |
+| 主要扣分原因 | 是 | 汇总关键扣分点 |
+| 关联评审建议序号 | 是 | 对应 `评审建议.序号`，多个用分号分隔 |
+| 处理建议 | 是 | `可执行` / `需修订` / `不建议执行` / `需重写` |
+| 复评状态 | 建议 | `未复评` / `已复评` / `待确认` |
 
 Recommended `追溯矩阵` columns:
 
@@ -126,6 +146,7 @@ Recommended column widths:
 - `追溯矩阵`: A=18, B=10, C=40, D=42
 - `执行说明`: A=18, B=80
 - `评审建议`: A=8, B=24, C=28, D=10, E=14, F=48, G=52, H=14, I=14, J=10, K=12, L=14, M=22
+- `质量评分`: A=14, B=18, C=10, D=14, E=12, F=12, G=12, H=12, I=14, J=48, K=22, L=16, M=12
 
 Recommended behavior rules:
 
@@ -134,6 +155,7 @@ Recommended behavior rules:
 - `测试结果` should have a dropdown of `PASS,FAIL,NA`
 - apply conditional formatting where possible: `YES` and `PASS` -> light green fill; `NO` and `NA` -> light gray fill; `FAIL` -> light red fill
 - when reviewing cases, append findings to `评审建议` rather than creating a standalone Markdown report by default
+- when scoring is enabled, create `质量评分` as a summary sheet and keep concrete issues in `评审建议`
 - if writing review findings into an existing workbook, create a reviewed copy unless the user explicitly asks to edit the source workbook in place
 
 ### Execution Ledger Extension
