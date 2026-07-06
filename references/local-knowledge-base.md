@@ -117,6 +117,7 @@ Capture:
 
 - final workbook path
 - scope breakdown
+- test object map or reusable object-decomposition method that drove the case set
 - coverage model that drove the case set
 - finite-entry lists that required full coverage
 - business-closure or downstream validation rules

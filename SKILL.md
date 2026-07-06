@@ -208,13 +208,30 @@ Before generating cases, read [references/testability-review.md](references/test
 
 If important gaps exist, output a `可测试性问题清单` before or alongside cases.
 
-### 3. Select specialized test dimensions before building coverage
+### 3. Build a test object map before coverage
+
+Read [references/test-object-analysis.md](references/test-object-analysis.md) and identify the test objects before writing scenarios or detailed cases.
+
+The object map should cover applicable:
+
+- page and interaction objects
+- business entity objects
+- state transition objects
+- permission and role objects
+- data and consistency objects
+- risk and confirmation objects
+
+For small requests, this may be a concise internal checklist or a short visible summary. For broad, risky, or review-facing work, make the map visible before detailed cases.
+
+Use the map to generate scenarios first, then convert confirmed high-value scenarios into executable cases. If a scenario has no requirement basis, mark it as `待确认` or `扩展建议` instead of turning it into a confirmed expected result.
+
+### 4. Select specialized test dimensions before building coverage
 
 Read [references/specialized-test-dimensions.md](references/specialized-test-dimensions.md) and decide whether the task also needs dimension-specific coverage such as API, UI, CLI, performance, security, compatibility, data, deployment, network, cache, async, file, third-party, search/filter, accessibility, i18n, reliability, compliance, or documentation consistency.
 
 If the source clearly implies any of these dimensions, include them proactively rather than waiting for the user to ask.
 
-### 4. Build a coverage model
+### 5. Build a coverage model
 
 Construct a coverage map using combinations such as:
 
@@ -253,7 +270,7 @@ Examples:
 
 For permission-heavy modules, treat access control as a first-class dimension, not an optional addon.
 
-### 5. Generate test assets with layered methods
+### 6. Generate test assets with layered methods
 
 Read [references/test-design-methods.md](references/test-design-methods.md) and apply methods in order:
 
@@ -274,7 +291,7 @@ If the domain is user, role, permission, organization, or admin-console heavy, a
 
 If the task involves browser-based UI automation, also read [references/ui-automation-coverage.md](references/ui-automation-coverage.md) and include its layers when relevant.
 
-### 6. Deduplicate by validation target, not by wording
+### 7. Deduplicate by validation target, not by wording
 
 Read [references/priority-and-traceability.md](references/priority-and-traceability.md).
 
@@ -286,7 +303,7 @@ Merge cases when they validate the same target and only differ by:
 
 Keep the more concrete case and preserve source-method tags if useful.
 
-### 7. Assign priority, risk, and traceability
+### 8. Assign priority, risk, and traceability
 
 Every output should include enough information to support:
 
@@ -301,7 +318,7 @@ Use the reference guidance for:
 - coverage target
 - risk summary structure
 
-### 8. If the artifact is AI-generated, add an AI quality review
+### 9. If the artifact is AI-generated, add an AI quality review
 
 Read [references/ai-output-review.md](references/ai-output-review.md) and explicitly inspect:
 
@@ -315,7 +332,7 @@ Read [references/ai-output-review.md](references/ai-output-review.md) and explic
 - duplication
 - culture/common-sense fit
 
-### 9. Capture reusable conclusions into the local knowledge base when approved
+### 10. Capture reusable conclusions into the local knowledge base when approved
 
 When a testcase-design, case-review, requirement-review, traceability, or risk task produces reusable conclusions, read [references/local-knowledge-base.md](references/local-knowledge-base.md) and decide whether the result should be captured as a library-style local knowledge note.
 
@@ -360,6 +377,7 @@ Each case must be:
 
 Before writing detailed cases:
 
+- first identify the test object map, then expand test scenarios, then write detailed cases from confirmed high-value scenarios
 - first break the requested feature into small functional points by dimension, not just by page or module name
 - write cases for each standalone functional point first
 - then write cases for the relationships, dependencies, handoffs, ordering rules, state coupling, or data interactions between functional points
@@ -462,6 +480,9 @@ Output:
 
 - Full-document reading is mandatory whenever the user provides or references a specific source document for case generation or review.
 - Do not generate broad QA outputs from headings, keyword matches, or partial excerpts when the complete document is available.
+- Do not jump directly from requirements to detailed cases when the requirement has business objects, states, permissions, data changes, or cross-module effects. Build a test object map first, then scenarios, then cases.
+- A valid test object map must consider page/interaction, business entity, state transition, permission/role, data consistency, and risk/confirmation objects when they are applicable.
+- Do not turn unsupported generic expansions into confirmed test cases. Mark them as `待确认` or `扩展建议` until the requirement or human reviewer confirms the baseline.
 - If you could not fully read the source, say so explicitly and do not claim complete coverage.
 - Requirement-defined behavior is always the expected result baseline.
 - Any behavior that does not conform to the requirement document, acceptance criteria, or explicitly confirmed product rule must be exposed as a failure and treated as a bug candidate.
@@ -526,10 +547,11 @@ Use these defaults:
 For broad requirement work, prefer:
 
 1. testability issues
-2. coverage map
-3. risk summary
-4. detailed cases
-5. traceability matrix
+2. test object map or object summary
+3. coverage map
+4. risk summary
+5. detailed cases
+6. traceability matrix
 
 ## Few-Shot Stabilization
 
@@ -567,6 +589,7 @@ If the user asks only for one artifact, output only that artifact plus the minim
 ## References
 
 - [references/document-reading.md](references/document-reading.md)
+- [references/test-object-analysis.md](references/test-object-analysis.md)
 - [references/specialized-test-dimensions.md](references/specialized-test-dimensions.md)
 - [references/requirement-parsing.md](references/requirement-parsing.md)
 - [references/testability-review.md](references/testability-review.md)
