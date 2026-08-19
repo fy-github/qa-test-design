@@ -242,6 +242,24 @@ Bundled script:
 
 - `node scripts/generate-docx.mjs --input <cases.json> --output <output.docx> --title <title>`
 
+### 正式测试报告（docx）排版规则
+
+生成正式测试报告 docx（如《Cloud V4 v4.0.xxx 测试报告》）时必须遵守既有格式，参考报告：`v4.0.004 测试报告-20260814.docx`。
+
+1. **标题必须用真实 Word 标题样式，不能只加粗正文。**
+   - 用 `doc.add_paragraph(style=...)` 应用 `Title` / `Heading 1` / `Heading 2` / `Heading 3` 段落样式；
+   - 禁止用 `doc.add_paragraph()` + 手动设置 run 加粗/颜色来冒充标题——那样 Word 全部按正文渲染，大纲与导航无法识别；
+   - 标题层级：`Title`（报告大标题）→ `Heading 1`（"1. 测试内容"…"6. 测试总结"、"附录"）→ `Heading 2`（"1.1/2.1/6.3"等二级，及遗留问题"一、/二、"）→ `Heading 3`（"1.2.1 功能测试"等 x.x.x 三级）。
+
+2. **排版规范（与 v4.0.004 参考报告一致）：**
+   - 全文字体 Arial Unicode MS，中文必须同时设置 `rFonts w:eastAsia`；
+   - `Title`：22pt、不加粗、左对齐、下方蓝色细线（`#4F81BD`，`w:sz=8`）；
+   - `Heading 1`：14pt 加粗 `#376092`；`Heading 2`：13pt 加粗 `#4F81BD`；`Heading 3`：加粗 `#4F81BD`；
+   - 正文 11pt、1.3 倍行距；
+   - 章节结构固定：1. 测试内容 / 2. 测试结果 / 3. 发布建议 / 4. 遗留问题 / 5. 缺陷分析 / 6. 测试总结 / 附录：测试用例执行情况统计。
+
+3. **生成后必须验证：** 解包 `word/document.xml`，确认标题段落带 `<w:pStyle w:val="Title|Heading1|Heading2|Heading3"/>`，且 Heading 样式含 outline 级别；再用 `textutil -convert txt` 检查中文无乱码。
+
 ## Format Selection Rule
 
 If the user gives no format:
