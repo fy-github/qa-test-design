@@ -249,16 +249,22 @@ Bundled script:
 1. **标题必须用真实 Word 标题样式，不能只加粗正文。**
    - 用 `doc.add_paragraph(style=...)` 应用 `Title` / `Heading 1` / `Heading 2` / `Heading 3` 段落样式；
    - 禁止用 `doc.add_paragraph()` + 手动设置 run 加粗/颜色来冒充标题——那样 Word 全部按正文渲染，大纲与导航无法识别；
-   - 标题层级：`Title`（报告大标题）→ `Heading 1`（"1. 测试内容"…"6. 测试总结"、"附录"）→ `Heading 2`（"1.1/2.1/6.3"等二级，及遗留问题"一、/二、"）→ `Heading 3`（"1.2.1 功能测试"等 x.x.x 三级）。
+   - 标题层级：`Title`（报告大标题）→ `Heading 1`（"1. 测试内容"…"6. 测试总结"、"附录"）→ `Heading 2`（"1.1/2.1/6.3"等二级）→ `Heading 3`（"1.2.1 功能测试"等 x.x.x 三级）。
 
 2. **排版规范（与 v4.0.004 参考报告一致）：**
    - 全文字体 Arial Unicode MS，中文必须同时设置 `rFonts w:eastAsia`；
    - `Title`：22pt、不加粗、左对齐、下方蓝色细线（`#4F81BD`，`w:sz=8`）；
    - `Heading 1`：14pt 加粗 `#376092`；`Heading 2`：13pt 加粗 `#4F81BD`；`Heading 3`：加粗 `#4F81BD`；
-   - 正文 11pt、1.3 倍行距；
+   - 正文 / Normal：10.5pt（`w:sz=21`）、1.15 行距（`w:line=276`）；
+   - 表格：单元格 9pt（`w:sz=18`）、表头加粗、各列等宽（总宽约 15.2cm，Letter 页左右边距 1.25"）；
    - 章节结构固定：1. 测试内容 / 2. 测试结果 / 3. 发布建议 / 4. 遗留问题 / 5. 缺陷分析 / 6. 测试总结 / 附录：测试用例执行情况统计。
 
-3. **生成后必须验证：** 解包 `word/document.xml`，确认标题段落带 `<w:pStyle w:val="Title|Heading1|Heading2|Heading3"/>`，且 Heading 样式含 outline 级别；再用 `textutil -convert txt` 检查中文无乱码。
+3. **章节内布局（与 v4.0.004 参考报告一致）：**
+   - 「遗留问题」的缺陷统计用表格，列：`关键字 / 概要 / 优先级 / 状态 / 经办人 / 遗留原因`；子分类标签（如"一、本次版本新增遗留缺陷"、"High优先级遗留缺陷"、"其他优先级缺陷分布"）用普通段落，不加粗、不用标题样式；High 优先级缺陷单列一张表，其余优先级用概括行（如`【Medium优先级】120个：……`）；
+   - 「缺陷分析总结 / 测试完成情况 / 质量评估」等处的"标签：值"数据行用项目符号列表（style 16 = `List Bullet`），不加粗 key；子标签（如"测试执行概况"、"整体质量评估"）用普通段落，不加粗；
+   - 「已解决故障汇总」的故障清单用表格，列：`关键字 / 概要 / 优先级 / 状态 / 修复人`。
+
+4. **生成后必须验证：** 解包 `word/document.xml`，确认标题段落带 `<w:pStyle w:val="Title|Heading1|Heading2|Heading3"/>`，且 Heading 样式含 outline 级别；再用 `textutil -convert txt` 检查中文无乱码。
 
 ## Format Selection Rule
 
