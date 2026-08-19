@@ -54,7 +54,9 @@ function stylesXml() {
 }
 
 function moduleLevels(item) {
-  const levels = item.modulePath?.length ? item.modulePath : String(item.module || '').split(/\s*\/\s*/).filter(Boolean);
+  const levels = item.modulePath?.length
+    ? item.modulePath
+    : String(item.module || '').split(/\s*(?:::|->|>|\/|\\|\|)\s*/).filter(Boolean);
   return [levels[0] ?? '', levels[1] ?? '', levels.slice(2).join(' / ')];
 }
 

@@ -26,6 +26,7 @@ Supported output formats:
 - `xlsx` (default)
 - `xmind`
 - `docx`
+- `confluence.wiki`
 
 Keep `SKILL.md` lean. Read reference files only when their scope is relevant.
 
@@ -40,7 +41,7 @@ Use this skill when the user asks for any of the following:
 - produce export-oriented deliverables in spreadsheet, mind-map, or document form
 - assess testability, observability, controllability, traceability, and coverage risk
 
-Do not use this skill for pure execution reporting after test run results already exist; that is a separate reporting workflow.
+Do not use this skill for pure execution reporting after test run results already exist unless the user explicitly asks for a report artifact; in that case follow the report workflow below.
 
 ## Inputs
 
@@ -245,6 +246,8 @@ Read [references/specialized-test-dimensions.md](references/specialized-test-dim
 
 If the source clearly implies any of these dimensions, include them proactively rather than waiting for the user to ask.
 
+When the source contains any input box, search box, filter field, or keyword query, explicitly apply the Search And Filter Dimension checklist. If length limits or allowed characters are not defined, add `待确认` or robustness cases instead of silently omitting length and special-character coverage.
+
 ### 5. Build a coverage model
 
 Construct a coverage map using combinations such as:
@@ -373,6 +376,50 @@ Write gate:
 - automatically write the local knowledge-base note only when the current session includes explicit user approval to persist this knowledge locally
 - if that approval is missing, prepare a concise candidate summary but do not write to the local memory store
 - do not treat ordinary skill invocation alone as permission to write persistent memory
+
+### 11. Test report workflow
+
+Use this when the user asks to generate or convert a test report from execution data, bug data, or a reference report template.
+
+Workflow:
+
+1. Identify the latest frozen source of truth.
+   - If the user says the Word report is already modified and should not change, treat that `docx` as read-only.
+   - Prefer the newest reviewed or manually edited report as the baseline.
+2. Inspect the report inputs before writing.
+   - Read the reference report template or source `docx`.
+   - Read the bug or execution data file, usually `xlsx`.
+   - Check version number, report date, module scope, and whether any requested scope must be excluded.
+3. Build the report content from the current inputs.
+   - Keep the wording, section order, and table structure consistent with the reference report.
+   - Apply user-specified exclusions first, such as removing alarm-related statistics or descriptions.
+   - Update the report version consistently in title, headings, filenames, and section labels.
+4. Generate the formal report document.
+   - Write or refresh the `docx` first when the user allows Word changes.
+   - If the user explicitly says the Word file must not change, skip all Word writes.
+5. Produce the Confluence wiki deliverable.
+   - Convert the final `docx` into `confluence.wiki`.
+   - Preserve heading levels, tables, bullets, and visible text order.
+6. Verify the deliverables.
+   - Check for garbled Chinese text, broken tables, missing headings, and stale version numbers.
+   - Confirm the output path and filenames match the requested version.
+7. Report the result clearly.
+   - Tell the user which file was generated or converted.
+   - If the Word file was intentionally untouched, state that explicitly.
+   - Mention any excluded scope or structural deviation from the reference report.
+
+Typical report inputs:
+
+- reference `docx` report template
+- execution or bug `xlsx`
+- version bump or release label
+- scope exclusions requested by the user
+
+Typical report outputs:
+
+- updated or preserved `docx`
+- `confluence.wiki` text for Confluence paste/import
+- optional build artifacts or intermediate inspection files when needed for verification
 
 ## Output Modes
 
