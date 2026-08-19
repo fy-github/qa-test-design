@@ -40,12 +40,7 @@ function toModulePath(value) {
   if (Array.isArray(value)) return value.map((item) => toFlatText(item)).filter(Boolean);
   const text = toFlatText(value);
   if (!text) return [];
-  for (const splitter of ['::', '->', '>', '/', '\\', '|']) {
-    if (text.includes(splitter)) {
-      return text.split(splitter).map((item) => item.trim()).filter(Boolean);
-    }
-  }
-  return [text];
+  return text.split(/\s*(?:::|->|>|\/|\\|\|)\s*/).filter(Boolean);
 }
 
 function toSteps(item) {

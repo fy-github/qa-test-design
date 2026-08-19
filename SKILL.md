@@ -26,6 +26,7 @@ Supported output formats:
 - `xlsx` (default)
 - `xmind`
 - `docx`
+- `confluence.wiki`
 
 Keep `SKILL.md` lean. Read reference files only when their scope is relevant.
 
@@ -40,7 +41,7 @@ Use this skill when the user asks for any of the following:
 - produce export-oriented deliverables in spreadsheet, mind-map, or document form
 - assess testability, observability, controllability, traceability, and coverage risk
 
-Do not use this skill for pure execution reporting after test run results already exist; that is a separate reporting workflow.
+Do not use this skill for pure execution reporting after test run results already exist unless the user explicitly asks for a report artifact; in that case follow the report workflow below.
 
 ## Inputs
 
@@ -93,6 +94,20 @@ Default local convention:
 - generated review reports, traceability matrices, and risk summaries may also go under `<current requirement folder>/测试用例/` when they are part of the same delivery set
 
 If the user explicitly specifies another location, follow the user instruction.
+
+## Existing Case Baseline Gate
+
+When generating, supplementing, or reviewing test cases in a workspace that may already contain same-topic case deliverables:
+
+- scan the target `测试用例/` folder before writing new cases
+- identify candidate same-topic workbooks, JSON files, review copies, and revision copies by requirement name, module name, version, or nearby keywords
+- choose the latest reviewed baseline before any raw draft, using this priority when names conflict: `补充修订版` > `评审处理版` > `复评修订版` > `复评版` > `评审版` > `测试用例` > `原始用例`
+- preserve existing baseline cases, traceability rows, and `评审建议` decisions unless the user explicitly asks to replace, delete, or rebuild from scratch
+- when adding cases for a new requirement version, append or merge into the reviewed baseline instead of shrinking to a smaller raw JSON or first draft
+- if no same-topic baseline exists, state that result before generation; if a baseline exists but is intentionally not used, state the reason and mark the risk
+
+Using a raw draft or extracted JSON as the base while a reviewed workbook exists is a hard failure unless the user explicitly requests that lower-quality source.
+
 ## Mandatory Full-Document Reading Gate
 
 If the user provides a specific document, file, exported text, or asks to work "based on this document", you must fully read that source before producing test points, detailed cases, traceability, risk summaries, or review conclusions.
@@ -231,6 +246,8 @@ Read [references/specialized-test-dimensions.md](references/specialized-test-dim
 
 If the source clearly implies any of these dimensions, include them proactively rather than waiting for the user to ask.
 
+When the source contains any input box, search box, filter field, or keyword query, explicitly apply the Search And Filter Dimension checklist. If length limits or allowed characters are not defined, add `待确认` or robustness cases instead of silently omitting length and special-character coverage.
+
 ### 5. Build a coverage model
 
 Construct a coverage map using combinations such as:
@@ -267,6 +284,16 @@ Examples:
 - If `用户中心` includes `概览 / 用户管理 / 角色管理 / 个人中心`, do not test only one or two entries as a representative sample. Each entry should be opened, checked against its page definition, and for pages with operations such as user or role management, lightly cover key add/edit/delete or enable/disable flows.
 - If a case clicks `用户中心 -> 用户管理`, the expected result should include jumping to the user management page, verifying that the user management page matches its definition, and lightly testing key add/edit/delete or enable/disable behavior when those operations are in scope.
 - If a case changes a withdrawal password in personal center, coverage should continue to a withdrawal scenario using the new password and verify the withdrawal reaches the required final result, such as successful submission or到账 evidence, according to the requirement and test environment.
+
+Pre-delivery coverage audit gate:
+
+- build a finite inventory from the source document, tables, screenshots, Figma/prototype evidence, and any inherited baseline workbook before declaring coverage complete
+- map every listed entry, menu, page, tab, search scope, state rule, role/permission state, and meaningful operation to one or more case IDs
+- grouped smoke cases are allowed only when every grouped item is explicitly named in the steps and expected results; a generic "cover all menus" case does not satisfy full-entry acceptance
+- for each navigation or entry item, verify destination definition, page title or breadcrumb, current menu highlight, visible controls, data or empty state, permission state, and key feedback where applicable
+- for management, configuration, permission, account, project, money, order, notification, or other business-affecting pages, map exposed operations to a closed-loop case such as create/read/update/delete/configure, save-and-reopen, permission-effect verification, downstream consumption, or final business-result verification
+- compare the final artifact against the selected baseline: prior cases, prior traceability rows, and unresolved or accepted `评审建议` items must not disappear without an explicit `已合并`, `待确认`, `不覆盖`, or user-approved deletion reason
+- if any finite inventory item, business endpoint, or baseline item remains unmatched, do not claim complete coverage; either add the missing case or record the gap visibly in the traceability/review output
 
 For permission-heavy modules, treat access control as a first-class dimension, not an optional addon.
 
@@ -349,6 +376,50 @@ Write gate:
 - automatically write the local knowledge-base note only when the current session includes explicit user approval to persist this knowledge locally
 - if that approval is missing, prepare a concise candidate summary but do not write to the local memory store
 - do not treat ordinary skill invocation alone as permission to write persistent memory
+
+### 11. Test report workflow
+
+Use this when the user asks to generate or convert a test report from execution data, bug data, or a reference report template.
+
+Workflow:
+
+1. Identify the latest frozen source of truth.
+   - If the user says the Word report is already modified and should not change, treat that `docx` as read-only.
+   - Prefer the newest reviewed or manually edited report as the baseline.
+2. Inspect the report inputs before writing.
+   - Read the reference report template or source `docx`.
+   - Read the bug or execution data file, usually `xlsx`.
+   - Check version number, report date, module scope, and whether any requested scope must be excluded.
+3. Build the report content from the current inputs.
+   - Keep the wording, section order, and table structure consistent with the reference report.
+   - Apply user-specified exclusions first, such as removing alarm-related statistics or descriptions.
+   - Update the report version consistently in title, headings, filenames, and section labels.
+4. Generate the formal report document.
+   - Write or refresh the `docx` first when the user allows Word changes.
+   - If the user explicitly says the Word file must not change, skip all Word writes.
+5. Produce the Confluence wiki deliverable.
+   - Convert the final `docx` into `confluence.wiki`.
+   - Preserve heading levels, tables, bullets, and visible text order.
+6. Verify the deliverables.
+   - Check for garbled Chinese text, broken tables, missing headings, and stale version numbers.
+   - Confirm the output path and filenames match the requested version.
+7. Report the result clearly.
+   - Tell the user which file was generated or converted.
+   - If the Word file was intentionally untouched, state that explicitly.
+   - Mention any excluded scope or structural deviation from the reference report.
+
+Typical report inputs:
+
+- reference `docx` report template
+- execution or bug `xlsx`
+- version bump or release label
+- scope exclusions requested by the user
+
+Typical report outputs:
+
+- updated or preserved `docx`
+- `confluence.wiki` text for Confluence paste/import
+- optional build artifacts or intermediate inspection files when needed for verification
 
 ## Output Modes
 
@@ -480,6 +551,8 @@ Output:
 
 - Full-document reading is mandatory whenever the user provides or references a specific source document for case generation or review.
 - Do not generate broad QA outputs from headings, keyword matches, or partial excerpts when the complete document is available.
+- When same-topic reviewed case deliverables exist, select and preserve the latest reviewed baseline before generating or supplementing cases; do not start from a raw draft, old JSON, or smaller workbook unless the user explicitly asks for that.
+- Before claiming full coverage for a finite scope, provide or internally complete a coverage audit that maps every listed entry, menu, page, tab, search scope, state rule, permission state, and operation to case IDs or explicit gap statuses.
 - Do not jump directly from requirements to detailed cases when the requirement has business objects, states, permissions, data changes, or cross-module effects. Build a test object map first, then scenarios, then cases.
 - A valid test object map must consider page/interaction, business entity, state transition, permission/role, data consistency, and risk/confirmation objects when they are applicable.
 - Do not turn unsupported generic expansions into confirmed test cases. Mark them as `待确认` or `扩展建议` until the requirement or human reviewer confirms the baseline.
@@ -521,6 +594,9 @@ Output:
 - Steps should describe actions, not vague verification verbs.
 - Do not generate cases that only validate surface interactions when a deeper business endpoint is implied. A navigation case must verify the destination page definition; a configuration or password-change case must verify the changed value works in the dependent business flow; a permission-change case must verify the affected actor's real access; a financial or settlement case must verify the final business result such as balance, order state,到账, or ledger evidence where applicable.
 - Do not use probability coverage for finite in-scope user-facing entries. If a requirement lists N menus, tabs, pages, modules, services, or role-state combinations, the case set must explicitly cover all N items or mark the uncovered items and reason as `待确认` / `不覆盖`.
+- Do not treat grouped menu or navigation smoke cases as a substitute for per-entry acceptance unless every entry is explicitly enumerated and individually asserted in the case or coverage map.
+- Do not treat page entry, route jump, search result click, save toast, or list refresh as business closure when the page exposes downstream operations or state effects that can be verified.
+- Do not drop, hide, or silently supersede review findings from an inherited workbook; unresolved and accepted `评审建议` rows must be preserved, disposed, or explicitly mapped to the new/updated cases.
 - When a feature point is provided, first split it into smaller functional points across the relevant dimensions before generating cases.
 - Generate cases for each standalone functional point first, then generate cases for the relationships between functional points.
 - Cover both functional points and functional-point relationships across all relevant test types; do not stop at a shallow subset of happy-path cases.

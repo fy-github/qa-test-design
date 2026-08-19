@@ -180,6 +180,15 @@ Add whenever the system depends on external providers.
 
 Add whenever the interface offers keyword search, filtering, sorting, or pagination.
 
+For every search box, filter field, or keyword query, explicitly check whether the case set covers:
+
+- empty input, whitespace-only input, leading/trailing spaces, and clearing after search
+- normal valid keywords from the requirement, such as Chinese, English, numbers, exact match, fuzzy match, and case sensitivity when applicable
+- long input and overlong input; if the PRD does not define a max length, write a robustness or `待确认` case instead of inventing a fixed limit
+- special characters, punctuation, emoji, mixed-width characters, newline/tab pasted text, and other uncommon input characters
+- script-like and SQL-like strings as security-oriented negative input; expected results should assert no execution, no error page, no data leak, and no broken layout
+- no-result state, result reset, pagination reset, filter combination behavior, and permission/server-side scope filtering
+
 ### Other Specialized Dimensions
 
 Use accessibility, i18n/l10n, reliability/DR, compliance, and documentation consistency when those requirements are explicit or the product context makes them high risk.
