@@ -15,6 +15,7 @@ Use it when you need to:
 - review existing test cases for gaps, duplication, or poor executability
 - review AI-generated QA artifacts for hallucination and consistency risk
 - produce traceability, priority layers, and release-facing risk summaries
+- organize version release notes from requirement/test evidence
 - check whether the requirement/design itself is testable before writing cases
 
 Default language is Chinese unless the user asks otherwise.
@@ -40,6 +41,7 @@ Use this skill when the user asks for any of the following:
 - check AI-generated test plans, cases, reports, or requirement summaries
 - produce export-oriented deliverables in spreadsheet, mind-map, or document form
 - assess testability, observability, controllability, traceability, and coverage risk
+- 整理版本发布说明、上线说明、发版说明，尤其是需要从需求和测试资产中提炼主要更新、已知问题修复、优化内容和版本注意事项时
 
 Do not use this skill for pure execution reporting after test run results already exist unless the user explicitly asks for a report artifact; in that case follow the report workflow below.
 
@@ -146,10 +148,13 @@ If the user does not specify mode, choose by intent:
 - "评审用例" -> case review mode
 - "检查 AI 产物" -> AI artifact review mode
 - "补追溯/风险" -> traceability and risk mode
+- "整理发布说明" / "版本发布说明" / "上线说明" -> release notes mode
 
 If the user does not specify output format:
 
 - default to `xlsx`
+
+For release notes mode, the default output is a plain-text Markdown file or direct chat text, not `xlsx`.
 
 If the user does not specify output location:
 
@@ -546,6 +551,18 @@ Output:
 - coverage rate
 - risk summary
 - release recommendation or next actions
+
+### Release Notes Mode
+
+Use when the user asks to organize version release notes, launch notes, release-facing update summaries, or similar materials from requirements, test cases, screenshots, review notes, or known上线项.
+
+Before writing:
+
+- collect all user-confirmed上线模块 first; do not limit the release notes to the first matching requirement file when the user provides an additional module list
+- separate confirmed content from uncertain implementation details
+- keep the wording concise and release-facing, not testcase-style
+
+Read [references/output-formats.md](references/output-formats.md) and follow its `Release Notes` section for the exact structure, terminology, and Confluence/HTML spacing rules.
 
 ## Hard Rules
 

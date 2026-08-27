@@ -242,6 +242,52 @@ Bundled script:
 
 - `node scripts/generate-docx.mjs --input <cases.json> --output <output.docx> --title <title>`
 
+## Release Notes
+
+Use when the user asks to organize `版本发布说明`, `上线说明`, `发布说明`, or release-facing summaries from requirements, test assets, screenshots, review notes, or a user-provided上线范围.
+
+Default output is a plain-text Markdown file or direct chat text. Do not use a Markdown table unless the user explicitly asks for a table.
+
+Recommended structure:
+
+```text
+ICC发布v{版本号}版本发布说明：
+本次 v{版本号} 版本主要围绕 {主要模块概述} 进行更新，同时修复 {关键问题概述}。
+
+主要更新
+1.{模块或能力}
+2.{模块或能力}
+3.{模块或能力}
+
+修复已知问题
+1.{已修复问题}
+2.{已修复问题}
+3.{修复后的用户价值或结果}
+
+优化内容
+1.{优化项}
+2.{优化项}
+3.{优化项}
+4.{优化项}
+
+版本注意事项
+1.{使用限制或兼容限制}
+2.{异常场景说明}
+3.{权益、状态、数据或兼容性注意事项}
+4.{重新开通、回滚、恢复、补偿等重要规则}
+```
+
+Rules:
+
+- Title format: `ICC发布v{版本号}版本发布说明：`
+- Keep the opening paragraph to one concise sentence that summarizes the release scope and key fix.
+- Section names must be: `主要更新`, `修复已知问题`, `优化内容`, `版本注意事项`.
+- Numbered items use compact form, for example `1.SD-WAN 活动二期`.
+- Prefer user-confirmed上线项 over guessing from file names.
+- If some release modules have no local PRD, include the user-confirmed item but avoid inventing detailed rules.
+- Keep terminology consistent with the product wording, such as `SD-WAN`, `OS v4.0`, `APP`, `GWID`.
+- If Confluence/HTML paste text is requested, preserve spacing entities such as `&#x20;`; otherwise use normal plain text.
+
 ## Format Selection Rule
 
 If the user gives no format:
