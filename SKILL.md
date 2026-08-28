@@ -395,10 +395,12 @@ Workflow:
    - Read the reference report template or source `docx`.
    - Read the bug or execution data file, usually `xlsx`.
    - Check version number, report date, module scope, and whether any requested scope must be excluded.
+   - When a reference `docx` controls the report format, read [references/test-report-template-following.md](references/test-report-template-following.md) before writing.
 3. Build the report content from the current inputs.
    - Keep the wording, section order, and table structure consistent with the reference report.
    - Apply user-specified exclusions first, such as removing alarm-related statistics or descriptions.
    - Update the report version consistently in title, headings, filenames, and section labels.
+   - Treat the template's paragraph styles, plain-text labels, title formatting, table count, table headers, and explanatory text as constraints; do not add custom headings, tables, table titles, or summary fields unless the user asks.
 4. Generate the formal report document.
    - Write or refresh the `docx` first when the user allows Word changes.
    - If the user explicitly says the Word file must not change, skip all Word writes.
@@ -408,6 +410,7 @@ Workflow:
 6. Verify the deliverables.
    - Check for garbled Chinese text, broken tables, missing headings, and stale version numbers.
    - Confirm the output path and filenames match the requested version.
+   - When following a template, compare the final document against the template's structural inventory and render every page before delivery.
 7. Report the result clearly.
    - Tell the user which file was generated or converted.
    - If the Word file was intentionally untouched, state that explicitly.
@@ -696,7 +699,7 @@ If the user asks only for one artifact, output only that artifact plus the minim
 - [references/few-shot-examples.md](references/few-shot-examples.md)
 - [references/local-knowledge-base.md](references/local-knowledge-base.md)
 - [references/case-review-scoring.md](references/case-review-scoring.md)
-
+- [references/test-report-template-following.md](references/test-report-template-following.md)
 
 
 
