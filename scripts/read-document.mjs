@@ -1,4 +1,4 @@
-﻿import fs from 'node:fs/promises';
+import fs from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
 import { spawnSync } from 'node:child_process';
@@ -63,9 +63,24 @@ async function readPlainText(inputPath) {
   return normalizeText(await fs.readFile(inputPath, 'utf8'));
 }
 
+function detectHtmlCharset(sample) {
+  const match = sample.match(/charset\s*=\s*["']?\s*([a-z0-9_\-]+)/i);
+  return match ? match[1].toLowerCase() : '';
+}
+
 async function readHtml(inputPath) {
-  const html = await fs.readFile(inputPath, 'utf8');
-  return htmlToText(html);
+  const buffer = await fs.readFile(inputPath);
+  const declared = detectHtmlCharset(buffer.subarray(0, 4096).toString('latin1'));
+  const candidates = declared ? [declared, 'utf-8'] : ['utf-8'];
+  for (const label of candidates) {
+    try {
+      // 指定声明的编码优先，回退 UTF-8；decode 失败时继续尝试下一个候选
+      return htmlToText(new TextDecoder(label).decode(buffer));
+    } catch {
+      // 未知编码标签，继续尝试下一个候选
+    }
+  }
+  return htmlToText(buffer.toString('utf8'));
 }
 
 function decodeQuotedPrintable(text) {
@@ -244,14 +259,19 @@ async function readDocument(inputPath) {
   }
 
   if (containerType === 'html' || ['.html', '.htm'].includes(ext)) {
+    // 各宿主优先使用 Node 内置解析，避免 textutil 对未声明编码的 UTF-8 页面产生乱码
+    const html = await readHtml(inputPath);
+    if (html.trim()) {
+      return html;
+    }
     if (platform === 'darwin') {
       try {
         return readViaTextutil(inputPath);
       } catch {
-        return readHtml(inputPath);
+        return html;
       }
     }
-    return readHtml(inputPath);
+    return html;
   }
 
   if (['.doc', '.docx', '.pdf', '.rtf'].includes(ext)) {

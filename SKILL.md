@@ -31,6 +31,33 @@ Supported output formats:
 
 Keep `SKILL.md` lean. Read reference files only when their scope is relevant.
 
+## Runtime Adaptation (Codex / Claude Code / Hermes)
+
+This package is host-neutral: the same `SKILL.md`, `references/`, and `scripts/` run under Codex, Claude Code, and Hermes.
+
+Never assume the current working directory is the package root, and never write deliverables into the package root.
+
+Resolve the package root with the bundled resolver before running any script:
+
+- `node "<skill_dir>/scripts/where.mjs"` prints JSON with `host`, `host_home`, `skill_dir`, `notes_root`, `node`, and `platform`
+- add `--ensure` to create the resolved `notes_root` directory
+
+Typical package root per host:
+
+- Codex: `~/.codex/skills/qa-test-design` (or `$CODEX_HOME/skills/qa-test-design`)
+- Claude Code: `~/.claude/skills/qa-test-design`, or `<project>/.claude/skills/qa-test-design` for project-scoped installs
+- Hermes: `<skills root>/qa-test-design` under `$HERMES_HOME/skills/`, including category layouts such as `$HERMES_HOME/skills/software-development/qa-test-design`
+
+Host-neutral execution rules:
+
+- always invoke bundled scripts with the resolved absolute path, for example `node "<skill_dir>/scripts/generate-json-and-xlsx.mjs" --input <raw-cases.json>`; do not `cd` into the package root just to make relative paths work
+- Node.js 18+ is the only runtime requirement; the bundled `*.mjs` scripts use the Node standard library only, so no `npm install` is needed on any host
+- package content is identical on every host; host-specific extras such as `agents/openai.yaml` (Codex) and the Windows `*.ps1` helpers are optional and ignored by other hosts
+- deliverables always go to `<current requirement folder>/测试用例/`, on every host
+- bundled scripts ship in two variants and both must be kept: Node `*.mjs` (runs on Windows, macOS, and Linux; the preferred path) and Windows-native `*.ps1` (UTF-8 with BOM, siblings located via `$PSScriptRoot`). Never delete either set, and never let an `.mjs` script depend on a macOS-only command outside an `os.platform()` guard
+- document reading: `.txt/.md/.csv/.json/.yaml` and `.html/.htm` are read by the bundled Node reader on every host (HTML charset is detected from the file, so UTF-8 and legacy GBK pages both decode correctly); `.doc/.docx/.rtf` need `textutil` on macOS or the bundled PowerShell helper on Windows; `.pdf` needs `pdftotext` or `mutool`. If a format has no available path on the current host, convert the source to text first and tell the user which reader was unavailable
+- knowledge notes go to the resolved `notes_root` (`$QA_KB_ROOT`, else `<host home>/extensions/ad_hoc/notes/`); see [references/local-knowledge-base.md](references/local-knowledge-base.md)
+
 ## When To Use
 
 Use this skill when the user asks for any of the following:
@@ -66,7 +93,7 @@ When the task depends on local requirement files, design screenshots, prototypes
 
 Preferred script:
 
-- `node scripts/ensure-requirements-folder.mjs`
+- `node "<skill_dir>/scripts/ensure-requirements-folder.mjs"`
 
 Default local convention:
 
@@ -88,7 +115,7 @@ When the task is generating test point files, test case files, traceability matr
 
 Preferred script:
 
-- `node scripts/ensure-testcases-folder.mjs`
+- `node "<skill_dir>/scripts/ensure-testcases-folder.mjs"`
 
 Default local convention:
 
@@ -172,7 +199,7 @@ When the target output is xlsx, prefer a two-step file flow:
 
 Preferred wrapper script:
 
-- `node scripts/generate-json-and-xlsx.mjs --input <raw-cases.json> [--output-dir <dir>] [--base-name <name>] [--title <title>]`
+- `node "<skill_dir>/scripts/generate-json-and-xlsx.mjs" --input <raw-cases.json> [--output-dir <dir>] [--base-name <name>] [--title <title>]`
 
 Real export scripts are bundled in `scripts/`:
 
@@ -198,7 +225,7 @@ Minimum rule:
 
 Preferred script:
 
-- `node scripts/read-document.mjs --input <source-file> --output <text-file>`
+- `node "<skill_dir>/scripts/read-document.mjs" --input <source-file> --output <text-file>`
 
 Read [references/document-reading.md](references/document-reading.md) when the source is html, doc, pdf, or another file-based document.
 
@@ -627,7 +654,7 @@ Read [references/output-formats.md](references/output-formats.md) and follow its
 - For user/role/permission systems, always cover actor-permission-state combinations.
 - If the requirement is not testable enough, say so explicitly instead of pretending the ambiguity does not matter.
 - Do not write to the local persistent knowledge base unless the current session includes explicit user approval for local persistence. If the skill has reusable conclusions but no such approval, keep them as a candidate summary only.
-- When local persistence is approved, write one concise library-style note under the local Codex memory root at `extensions/ad_hoc/notes/` according to [references/local-knowledge-base.md](references/local-knowledge-base.md) instead of scattering conclusions across chat only.
+- When local persistence is approved, write one concise library-style note under the resolved `notes_root` — `$QA_KB_ROOT` when set, otherwise `<host home>/extensions/ad_hoc/notes/` (Codex `~/.codex`, Claude Code `~/.claude`, Hermes `$HERMES_HOME`), resolved via `node "<skill_dir>/scripts/where.mjs"` — according to [references/local-knowledge-base.md](references/local-knowledge-base.md) instead of scattering conclusions across chat only.
 
 ## Format Routing
 

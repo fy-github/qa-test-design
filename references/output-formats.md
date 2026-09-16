@@ -1,4 +1,4 @@
-﻿# Output Formats
+# Output Formats
 
 Default format is `xlsx`.
 

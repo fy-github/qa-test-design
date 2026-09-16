@@ -1,4 +1,4 @@
-﻿# qa-test-design
+# qa-test-design
 
 一个面向需求分析、测试设计、测试用例生成与评审的综合型 QA Skill。
 
@@ -143,6 +143,7 @@ qa-test-design/
 │   └── ui-automation-coverage.md
 └── scripts/
     ├── common.mjs
+    ├── where.mjs
     ├── ensure-requirements-folder.mjs
     ├── ensure-testcases-folder.mjs
     ├── read-document.mjs
@@ -157,6 +158,34 @@ qa-test-design/
 - `SKILL.md` 是给 Codex/Agent 读取的主入口
 - `references/` 放方法论、领域规则、格式说明和 few-shot
 - `scripts/` 放跨平台导出脚本，当前优先使用 Node 版本 `*.mjs`
+- `scripts/where.mjs` 解析当前宿主环境（Codex / Claude Code / Hermes），输出 skill 包目录与本地知识库 notes 根目录
+
+---
+
+## 3.1 运行环境适配（Codex / Claude Code / Hermes）
+
+同一个包在三种宿主下通用，`SKILL.md`、`references/`、`scripts/` 内容完全一致，不需要分叉维护。
+
+三种宿主的安装位置：
+
+| 宿主 | 包根目录 |
+|---|---|
+| Codex | `~/.codex/skills/qa-test-design`（或 `$CODEX_HOME/skills/qa-test-design`）|
+| Claude Code | `~/.claude/skills/qa-test-design`，项目级安装为 `<项目>/.claude/skills/qa-test-design` |
+| Hermes | `<skills 根目录>/qa-test-design`，含分类目录形式如 `$HERMES_HOME/skills/software-development/qa-test-design` |
+
+关键约定：
+
+- 不要假定当前工作目录就是 skill 包目录，也不要把产物写进 skill 包目录
+- 调用脚本一律使用解析出的绝对路径，例如 `node "<skill_dir>/scripts/generate-json-and-xlsx.mjs" --input <raw-cases.json>`
+- 先跑一次 `node "<skill_dir>/scripts/where.mjs"` 拿到 `skill_dir` 与 `notes_root`；加 `--ensure` 可创建 notes 目录
+- 运行依赖只有 Node.js 18+，脚本只用 Node 标准库，任何宿主都不需要 `npm install`
+- `agents/openai.yaml` 属于 Codex 专用附加项，其他宿主忽略即可；Windows `*.ps1` 脚本必须保留，不能因为只在 macOS 使用就删掉
+- 知识库笔记写入解析出的 notes 根目录：`$QA_KB_ROOT` 优先，否则 `<宿主 home>/extensions/ad_hoc/notes/`
+- 交付产物统一写到 `<当前需求文件夹>/测试用例/`
+- 同步多宿主本地安装（改完一个再复制到其他宿主，等效于拉取远端）：macOS/Linux 用 `rsync -a --delete --exclude .git --exclude .DS_Store "<包目录>/" "<目标安装目录>/"`；Windows 用 `robocopy "<包目录>" "<目标安装目录>" /MIR /XD .git`
+- 文档解析：`.txt/.md/.csv/.json/.yaml` 与 `.html/.htm` 在三种宿主下都走包内 Node 解析器，HTML 会读取文件声明的编码，UTF-8 与 GBK 页面都不会乱码；`.doc/.docx/.rtf` 依赖 macOS 的 `textutil` 或 Windows 的 PowerShell 助手脚本；`.pdf` 依赖 `pdftotext` 或 `mutool`
+- 如果当前宿主缺少某类文件的解析路径，先把源文件转成文本再继续，并在结果里说明缺失的解析器
 
 ---
 
@@ -623,8 +652,15 @@ node scripts/read-document.mjs --input <source-file> --output <text-file>
 平台说明：
 
 - Windows 下 `doc/docx/pdf/rtf` 通过 `read-document-win.ps1` 调用本地 Word COM 读取
-- macOS 下 `doc/docx/rtf/html` 优先走 `textutil`
+- macOS 下 `doc/docx/rtf` 走 `textutil`
+- `html/htm` 在三种宿主下都优先用包内 Node 解析器（按文件声明的编码解码，UTF-8 与 GBK 都不会乱码），解析不出内容时才回退 `textutil`（macOS）
 - macOS / Linux 下 `pdf` 优先尝试 `pdftotext`，其次 `mutool`
+
+脚本双平台约定：
+
+- 每类脚本都保留两套：Node 版 `*.mjs`（Windows / macOS / Linux 通用，优先使用）与 Windows 版 `*.ps1`（UTF-8 with BOM）
+- `common.ps1` 由其余 `.ps1` 用 `$PSScriptRoot` 定位，跨目录调用不会失效
+- 新增或修改脚本时不得删除任何一套，也不要让 `.mjs` 依赖仅 macOS 存在的命令
 
 这条脚本的目的，是把“完整读取文档”的动作标准化，避免只靠人工临时抽取正文。
 

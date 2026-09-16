@@ -1,4 +1,4 @@
-﻿# Document Reading
+# Document Reading
 
 Use this reference when the task is driven by a source document file rather than plain pasted text.
 

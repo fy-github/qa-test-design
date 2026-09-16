@@ -1,4 +1,4 @@
-﻿# UI Automation Coverage
+# UI Automation Coverage
 
 Use this reference when the task involves browser-based UI automation, especially for admin console forms, tables, drawers, tabs, selectors, and high-frequency operator actions.
 

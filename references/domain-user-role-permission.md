@@ -1,4 +1,4 @@
-﻿# Domain Scenarios: User / Role / Permission
+# Domain Scenarios: User / Role / Permission
 
 Use this reference when the requirement involves:
 

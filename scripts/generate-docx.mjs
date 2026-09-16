@@ -1,4 +1,4 @@
-﻿import { readJsonArray, normalizeCases, summarizeCases, xmlEscape, writeZip } from './common.mjs';
+import { readJsonArray, normalizeCases, summarizeCases, xmlEscape, writeZip } from './common.mjs';
 
 function paragraph(text, style = 'normal') {
   const escaped = xmlEscape(text ?? '');

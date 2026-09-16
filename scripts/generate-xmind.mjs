@@ -1,4 +1,4 @@
-﻿import { readJsonArray, normalizeCases, xmlEscape, writeZip } from './common.mjs';
+import { readJsonArray, normalizeCases, xmlEscape, writeZip } from './common.mjs';
 
 let topicCounter = 0;
 function topicId() {

@@ -27,11 +27,13 @@ If the session does not include explicit user approval for local persistence:
 
 ## Write Location
 
-When local persistence is approved, write the note to:
+When local persistence is approved, write the note to the resolved notes root:
 
-- the local Codex memory root under `extensions/ad_hoc/notes/`
+- `$QA_KB_ROOT` when the user or environment sets it
+- otherwise `<host home>/extensions/ad_hoc/notes/`, where `<host home>` is `~/.codex` on Codex, `~/.claude` on Claude Code, and `$HERMES_HOME` (default `~/.hermes`) on Hermes; project-scoped installs resolve under their project directory
+- resolve it with `node "<skill_dir>/scripts/where.mjs"` instead of guessing
 
-Create one new note file per significant task or delivery set. Do not overwrite or delete old notes.
+The notes root is host-local and lives outside the skill package. Create one new note file per significant task or delivery set. Do not overwrite or delete old notes.
 
 ## File Naming
 

@@ -1,4 +1,4 @@
-﻿# Few-Shot Examples
+# Few-Shot Examples
 
 Use these examples to stabilize phrasing, structure, and coverage style.
 

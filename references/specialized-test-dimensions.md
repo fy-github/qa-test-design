@@ -1,4 +1,4 @@
-﻿# Specialized Test Dimensions
+# Specialized Test Dimensions
 
 Use this reference when the task needs broader coverage than only business-functional cases.
 
