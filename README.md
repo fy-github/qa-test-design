@@ -182,6 +182,7 @@ qa-test-design/
 - 运行依赖只有 Node.js 18+，脚本只用 Node 标准库，任何宿主都不需要 `npm install`
 - `agents/openai.yaml` 属于 Codex 专用附加项，其他宿主忽略即可；Windows `*.ps1` 脚本必须保留，不能因为只在 macOS 使用就删掉
 - 知识库笔记写入解析出的 notes 根目录：`$QA_KB_ROOT` 优先，否则 `<宿主 home>/extensions/ad_hoc/notes/`
+- 提交或推送前先跑 `node "<skill_dir>/scripts/check-sensitive.mjs"`：凭据命中、`*.local.md` 被 git 跟踪、包内出现产物/图片都会报出来；本机私有取值一律放 `references/*.local.md`（已被忽略）
 - 交付产物统一写到 `<当前需求文件夹>/测试用例/`
 - 同步多宿主本地安装（改完一个再复制到其他宿主，等效于拉取远端）：macOS/Linux 用 `rsync -a --delete --exclude .git --exclude .DS_Store "<包目录>/" "<目标安装目录>/"`；Windows 用 `robocopy "<包目录>" "<目标安装目录>" /MIR /XD .git`
 - 文档解析：`.txt/.md/.csv/.json/.yaml` 与 `.html/.htm` 在三种宿主下都走包内 Node 解析器，HTML 会读取文件声明的编码，UTF-8 与 GBK 页面都不会乱码；`.doc/.docx/.rtf` 依赖 macOS 的 `textutil` 或 Windows 的 PowerShell 助手脚本；`.pdf` 依赖 `pdftotext` 或 `mutool`
@@ -316,6 +317,17 @@ qa-test-design/
 - 覆盖率
 - 质量风险摘要
 - 发布建议
+
+---
+
+### 6.6 缺陷单模式
+
+用户发来截图、录屏或一句话现象描述，要求生成问题单或直接提交 Jira 时进入该模式。
+
+- 流程见 [defect-filing-jira.md](./references/defect-filing-jira.md)
+- 先分析附件 → 判定前后端 → 按概要查重 → 出正文 → 用户确认 → 提交 → 回读校验 → 回报单号
+- 站点、项目、经办人、字段 id、目标版本等取值来自本机 `defect-filing-jira.local.md`，不写进本仓库
+- 附件上传前先做敏感信息自查，确认动作在 Hermes 用按钮部件、其他宿主用一句话询问
 
 ---
 
@@ -539,6 +551,11 @@ node scripts/generate-docx.mjs --input <cases.json> --output <output.docx> --tit
 
 - [output-formats.md](./references/output-formats.md)
 - [few-shot-examples.md](./references/few-shot-examples.md)
+
+### 缺陷单归档
+
+- [defect-filing-jira.md](./references/defect-filing-jira.md)：截图/录屏 → Jira 问题单（分析、正文格式、提交、回读校验）
+- `defect-filing-jira.local.md`：本机环境约定（站点、项目、经办人、字段 id、目标版本、概要前缀），由 `.gitignore` 中的 `references/*.local.md` 忽略，不提交、不推送
 
 ---
 

@@ -265,6 +265,8 @@ Bundled script:
    - 「已解决故障汇总」的故障清单用表格，列：`关键字 / 概要 / 优先级 / 状态 / 修复人`。
 
 4. **生成后必须验证：** 解包 `word/document.xml`，确认标题段落带 `<w:pStyle w:val="Title|Heading1|Heading2|Heading3"/>`，且 Heading 样式含 outline 级别；再用 `textutil -convert txt` 检查中文无乱码。
+5. **推荐生成方式（以参考报告为样式载体）：** 用 python-docx 打开参考报告 docx，删除 body 下所有 `w:p` / `w:tbl`（必须保留末尾 `w:sectPr`，否则丢失页面设置），再用 `Title` / `Heading 1` / `Heading 2` / `Heading 3` / `List Bullet` / `Table Grid` 写入新内容。标题下边框、字体、编号定义与页面几何全部继承，避免手工重建样式。表格统一：`Table Grid`、各列等宽（总宽 15.2cm）、表头 run 加粗、单元格 9pt，每个表格后补一个空段落。
+6. **macOS 无 LibreOffice 时的页面校验：** 用 `qlmanage -t -s 1600 -o <outdir> <report.docx>` 生成首页缩略图做视觉核对（标题下边框、标题层级、中文字形、表格是否变形），配合第 4 条的 `textutil` 与 `document.xml` 检查；有 LibreOffice 时仍优先转 PDF 逐页核对。
 
 ## Release Notes
 

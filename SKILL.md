@@ -1,6 +1,6 @@
 ---
 name: qa-test-design
-description: Use when the user asks to 根据需求生成测试用例、生成测试点、评审测试用例、补追溯矩阵、输出风险摘要，或将 PRD/需求文档/UI/API 转成 QA 测试资产，尤其适用于导出 xlsx/xmind/docx 的场景。
+description: Use when the user asks to 根据需求生成测试用例、生成测试点、评审测试用例、补追溯矩阵、输出风险摘要、生成或提交Jira缺陷单，或将 PRD/需求文档/UI/API/截图录屏转成 QA 测试资产，尤其适用于导出 xlsx/xmind/docx 的场景。
 ---
 
 # QA Test Design
@@ -56,6 +56,7 @@ Host-neutral execution rules:
 - deliverables always go to `<current requirement folder>/测试用例/`, on every host
 - bundled scripts ship in two variants and both must be kept: Node `*.mjs` (runs on Windows, macOS, and Linux; the preferred path) and Windows-native `*.ps1` (UTF-8 with BOM, siblings located via `$PSScriptRoot`). Never delete either set, and never let an `.mjs` script depend on a macOS-only command outside an `os.platform()` guard
 - document reading: `.txt/.md/.csv/.json/.yaml` and `.html/.htm` are read by the bundled Node reader on every host (HTML charset is detected from the file, so UTF-8 and legacy GBK pages both decode correctly); `.doc/.docx/.rtf` need `textutil` on macOS or the bundled PowerShell helper on Windows; `.pdf` needs `pdftotext` or `mutool`. If a format has no available path on the current host, convert the source to text first and tell the user which reader was unavailable
+- before committing, pushing, or publishing the package or any artifact, run `node "<skill_dir>/scripts/check-sensitive.mjs"`: it exits non-zero on credential hits, on `*.local.md` files that git tracks, and warns on artifacts/images that may carry customer data. Keep host-private conventions in `references/*.local.md` (gitignored) instead of the shared files
 - knowledge notes go to the resolved `notes_root` (`$QA_KB_ROOT`, else `<host home>/extensions/ad_hoc/notes/`); see [references/local-knowledge-base.md](references/local-knowledge-base.md)
 
 ## When To Use
@@ -69,6 +70,7 @@ Use this skill when the user asks for any of the following:
 - produce export-oriented deliverables in spreadsheet, mind-map, or document form
 - assess testability, observability, controllability, traceability, and coverage risk
 - 整理版本发布说明、上线说明、发版说明，尤其是需要从需求和测试资产中提炼主要更新、已知问题修复、优化内容和版本注意事项时
+- 根据截图、录屏或一句话现象描述生成 Jira 缺陷单，或要求直接把问题单提交到 Jira（字段、附件、Blocks 链接一并处理）
 
 Do not use this skill for pure execution reporting after test run results already exist unless the user explicitly asks for a report artifact; in that case follow the report workflow below.
 
@@ -176,6 +178,7 @@ If the user does not specify mode, choose by intent:
 - "检查 AI 产物" -> AI artifact review mode
 - "补追溯/风险" -> traceability and risk mode
 - "整理发布说明" / "版本发布说明" / "上线说明" -> release notes mode
+- "写问题单" / "提交 Jira 问题单" / "缺陷单" / "截图报 bug" -> defect filing mode
 
 If the user does not specify output format:
 
@@ -418,6 +421,8 @@ Workflow:
 1. Identify the latest frozen source of truth.
    - If the user says the Word report is already modified and should not change, treat that `docx` as read-only.
    - Prefer the newest reviewed or manually edited report as the baseline.
+   - When the team publishes test reports on a corporate wiki, the wiki page is the source of truth for both format and content; a local `docx` of the same version may be an older draft and must not be used as the baseline or overwritten.
+   - When the wiki is the publishing target, read `references/test-report-wiki.local.md` (host-local, never committed) for the wiki space/page location, page-naming rule, section structure, statistics conventions and write discipline before drafting; when that file is absent, ask the user for those values.
 2. Inspect the report inputs before writing.
    - Read the reference report template or source `docx`.
    - Read the bug or execution data file, usually `xlsx`.
@@ -426,11 +431,16 @@ Workflow:
 3. Build the report content from the current inputs.
    - Keep the wording, section order, and table structure consistent with the reference report.
    - Apply user-specified exclusions first, such as removing alarm-related statistics or descriptions.
+   - When the version is an optimization/fix release and no test-case workbook exists, scope the statistics to release-content-related functions plus issues whose fix version is this release, and exclude unrelated modules; state that scope explicitly in the report body instead of leaving it implicit.
+   - Never derive case counts, pass rate, or completion rate from bug statuses. When no execution record exists, keep the template's case columns and write `待补充` rather than computing a number from BUG data.
+   - When the input is only a release note, treat the release-note content as the report's scope authority and collect the defect evidence from the tracker (fix version, affected version, and the named function areas) before writing.
    - Update the report version consistently in title, headings, filenames, and section labels.
    - Treat the template's paragraph styles, plain-text labels, title formatting, table count, table headers, and explanatory text as constraints; do not add custom headings, tables, table titles, or summary fields unless the user asks.
 4. Generate the formal report document.
    - Write or refresh the `docx` first when the user allows Word changes.
    - If the user explicitly says the Word file must not change, skip all Word writes.
+   - Creating or updating any report artifact (wiki page, local file) requires explicit user approval first: present the draft, wait for authorization, then write. Never write silently or fold an unapproved write into another task.
+   - Never modify a report belonging to an earlier version; every write is limited to the current version's own report (create it new, or update only that version's page/file).
 5. Produce the Confluence wiki deliverable.
    - Convert the final `docx` into `confluence.wiki`.
    - Preserve heading levels, tables, bullets, and visible text order.
@@ -457,6 +467,18 @@ Typical report outputs:
 - optional build artifacts or intermediate inspection files when needed for verification
 
 ## Output Modes
+
+### Defect Filing Mode
+
+Use when the user sends a screenshot, recording, or one-line symptom description and wants a Jira defect ticket (paste-ready, or filed directly).
+
+Read [references/defect-filing-jira.md](references/defect-filing-jira.md) and follow it end to end. Key points:
+
+- analyze every attachment with the host's image capability before drafting (Hermes: `vision_analyze`); recordings usually yield only representative frames
+- output only the ticket body in chat (title + 前置条件 / 复现步骤 / 结果 / 预期结果), each section numbered independently from 1
+- get an explicit user confirmation before any write: on Hermes render a button widget, on hosts without widgets ask in one line
+- file via the site's Jira REST API (not the MCP create tool), upload attachments after a sensitive-data check, create the Blocks link, then read the issue back and report the key
+- site, project, assignee identifiers, field ids, target version and summary prefixes are user environment conventions: resolve them from `references/defect-filing-jira.local.md` when present, otherwise ask; never hardcode them in this package
 
 ### Test Points Mode
 
@@ -636,6 +658,9 @@ Read [references/output-formats.md](references/output-formats.md) and follow its
 - If the requirement depends on Chinese text fidelity, explicitly report that a no-garbled-text check was completed before concluding the task.
 - When reading or writing workbooks/documents that involve Chinese paths, Chinese sheet names, or Chinese cell/body text, do not use PowerShell heredoc, inline shell scripts, or long command-line string generation. Write a standalone UTF-8 script file first, run that file, then reopen/read back the output to verify exact content.
 - For Windows PowerShell helper scripts that contain Chinese literals and must run under Windows PowerShell, save the helper as UTF-8 with BOM; for Node/Python helper scripts, save as UTF-8 and avoid embedding Chinese file paths directly in a shell command when a working directory plus filename can be used.
+- When filing Jira defects, file through the Jira REST API rather than the MCP create tool: the MCP tool has no attachment upload and its description path mangles ` # ` list syntax.
+- When filing Jira defects, place image references before the `预期结果：` section, and read the created issue back before reporting success.
+- When filing Jira defects, keep the site, project, assignee identifiers, field ids, target version and summary prefixes out of this package: resolve them from the local `references/defect-filing-jira.local.md` (or ask the user), never print, log or commit credentials, and check attachments for customer or account data before uploading.
 - Do not fabricate requirements. If you infer, label the item as `推断` or `待确认`.
 - Every detailed case must have a requirement source or an explicit placeholder.
 - Expected results must be observable and pass/fail capable.
@@ -727,6 +752,9 @@ If the user asks only for one artifact, output only that artifact plus the minim
 - [references/local-knowledge-base.md](references/local-knowledge-base.md)
 - [references/case-review-scoring.md](references/case-review-scoring.md)
 - [references/test-report-template-following.md](references/test-report-template-following.md)
+- [references/defect-filing-jira.md](references/defect-filing-jira.md)
+- references/defect-filing-jira.local.md（本机私有约定：站点、项目、经办人、字段 id、目标版本、概要前缀；由 .gitignore 忽略，不随仓库分发，存在时读取）
+- references/test-report-wiki.local.md（本机私有约定：测试报告位置、格式基线、取值口径、写入纪律；同样不随仓库分发，存在时读取）
 
 
 

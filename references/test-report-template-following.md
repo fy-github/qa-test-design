@@ -16,6 +16,15 @@ Before authoring, inventory the template:
 
 Build the final report from a copy of the template. Preserve the template itself unchanged.
 
+## Scope Authority
+
+When the source material is a release note rather than an execution record:
+
+- treat the release note as the scope authority: the functions it names define which issues count
+- collect defect evidence from the issue tracker by fix version, affected version, and the named function areas; do not widen the statistics to every issue of that version
+- state the statistical scope in the report body so the reader knows what was and was not counted
+- keep the template's case-metric fields and mark them `待补充` when no execution record exists; never infer a pass rate from issue statuses
+
 ## Content Rules
 
 - Preserve the template's chapter sequence and heading levels exactly unless the user explicitly asks for a structural change.
