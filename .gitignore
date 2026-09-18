@@ -4,3 +4,16 @@ Thumbs.db
 *.tmp
 *.bak
 node_modules/
+# 本机私有约定文件（含站点、账号、内网取值）：永不提交
+*.local.md
+
+# 流程产物：skill 包内不允许落产物；万一落了也不要提交（报告/用例/截图常含客户数据）
+功能需求/
+测试用例/
+*.xlsx
+*.docx
+*.xmind
+*.pdf
+*.png
+*.jpg
+*.jpeg
