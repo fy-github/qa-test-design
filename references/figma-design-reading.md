@@ -7,15 +7,30 @@
 ## 一、先判断能不能匿名访问（不要直接开浏览器）
 
 - 用 curl 探测设计文件链接与 og:image / thumbnail 接口：thumbnail 返回 404、embed 页出现权限校验文案 ⇒ 该文件不可匿名访问，必须用带登录态的浏览器
-- 需要登录时，只能使用用户真实浏览器配置的副本（其登录态）；**任何情况下都不要索取或输入账号密码**
-- Hermes：`browser.use_real_profile` 要求真实 Chrome **完全退出**——关窗口不等于退出。先核对 `pgrep -f "Google Chrome" | wc -l` 为 0、profile 的 SingletonLock 已释放，再发起浏览器调用
-- Hermes 浏览器默认无头。无头 UA（`HeadlessChrome`）+ `navigator.webdriver=true` 会触发 Figma 的 CloudFront 403「Request blocked」：用 `Network.setUserAgentOverride` 覆盖为普通 Chrome UA 并带 acceptLanguage，再 reload（用 `document.title` 确认进入文件）
+- **任何情况下都不要索取或输入账号密码**：登录必须由本人在可见窗口里完成，agent 只负责把窗口开好、验证登录是否生效
+
+### 登录态方案（按优先级）
+
+1. **专用常驻浏览器（首选）**：单独一个固定 profile + 固定调试端口的浏览器承载登录态，agent 通过 CDP 接管它（Hermes 用 `browser.cdp_url`，其它宿主用 `--cdp`）。登录一次长期有效，与用户自己的浏览器互不干扰（不同应用、不同 profile），可并行使用
+   - 必须用**有头**模式：无头会话的 UA 会被设计站点的 CDN 拦（Figma 返回 CloudFront 403），而且实测并不省内存（无头反而更高）
+   - 落地后先验证「登录真的持久」：关掉浏览器、用同一 profile 重开，确认仍是登录态（profile 的 cookie 库里能看到会话 cookie）。之后按需启停即可，不需要常驻占内存
+   - 启停与状态检查建议固化成一条本地命令（见 `*.local.md`），避免每次现拼启动参数
+2. **真实 profile 快照模式（兜底）**：Hermes 的 `browser.use_real_profile` 会快照用户真实浏览器的 profile，并以无头方式驱动**用户安装的那个浏览器**——要求用户完全退出浏览器（关窗口不等于退出，用 `pgrep` 与 profile 锁文件核对），且会占住该浏览器应用，用户自己也用不了。仅在搭不起常驻浏览器时使用
+
+### 先确认 agent 自己的浏览器 profile 是否持久
+
+- 很多实现用 `/tmp` 下的**临时 profile**（如 `/tmp/agent-browser-chrome-<uuid>`），浏览器进程退出即删 —— 登录态根本落不下来，这不是配置问题而是架构限制
+- 用「登录后关掉再重开，是否仍免登录」验证，而不是假设；临时 profile 重开必然掉登录
+- 部分实现（agent-browser 0.26）支持 `--session-name` / `--state` 持久化 cookie，但宿主未必把这两个参数透传出去，先查宿主的启动参数再指望它
+- Hermes 浏览器默认无头。无头 UA（`HeadlessChrome`）+ `navigator.webdriver=true` 会触发 Figma 的 CloudFront 403「Request blocked」：用 `Network.setUserAgentOverride` 覆盖为普通 Chrome UA 并带 acceptLanguage，再 reload（用 `document.title` 确认进入文件）；常驻浏览器用有头模式时通常不会触发
 - 权限边界要写进结论：只读文件会出现「You can only view and comment on this file」⇒ 不要尝试编辑/导出；Dev Mode 可能被拦截（「We've sent a reminder about your Dev Mode request」）⇒ 退回放大截图方案，不要宣称拿到了设计参数
 
 ## 二、读取设计内容
 
+- **先自检能不能读 DOM**：一次调用里同时打印 `document.body.innerText.length` 与 `Accessibility.getFullAXTree` 里 `role == 'row'` 的数量。设计工具在**有头**会话里常把界面整块画在 canvas 上、无障碍层默认关闭（页面会提示 `Screenreader support ... currently disabled`），两者可能都接近 0（实测 200 字 / 0 行），`Accessibility.enable` 也救不回来。这时**不要反复重试**，直接切到「截图 + 视觉识别」主路径
+- 结论：**读取内容的主路径是截图 + 视觉识别**，图层树只在 AX 可用时作为增强手段（用于精确选中某个 Frame）；不要把 AX 定位写死成必经步骤
 - **画布文字不在 DOM 里**：`document.body.innerText` 只能拿到界面外壳（页面名、图层名、评论、属性面板）。设计稿里的文案/数值/表头一律要靠放大截图 + 视觉识别
-- 图层树走无障碍树：`cdp('Accessibility.getFullAXTree')['nodes']` 过滤 `role == 'row'` 可拿到 Pages / Layers 行，用 `DOM.getBoxModel` 换算出点击坐标
+- 图层树走无障碍树（仅在 AX 可用时）：`cdp('Accessibility.getFullAXTree')['nodes']` 过滤 `role == 'row'` 可拿到 Pages / Layers 行，用 `DOM.getBoxModel` 换算出点击坐标
 - **DOM 节点 id 会变**（切换模式、面板滚动后重新渲染）：每次都用当前 AX 树按**图层名**重新匹配，绝不复用上一轮的 id
 - 在图层面板里选中某个 Frame 会自动展开其子级 ⇒ 用「选中 → 看子级 → 再选中」逐层下钻到模块级；行长距离滚动时用鼠标滚轮在面板 x 位置滚动，再重新取 box
 - 截图前先把窗口调大（`Browser.getWindowForTarget` → `Browser.setWindowBounds`，例如 1760x1100），否则小窗口里字不可读
