@@ -71,6 +71,7 @@ Use this skill when the user asks for any of the following:
 - assess testability, observability, controllability, traceability, and coverage risk
 - 整理版本发布说明、上线说明、发版说明，尤其是需要从需求和测试资产中提炼主要更新、已知问题修复、优化内容和版本注意事项时
 - 根据截图、录屏或一句话现象描述生成 Jira 缺陷单，或要求直接把问题单提交到 Jira（字段、附件、Blocks 链接一并处理）
+- 需求/原型里带设计稿链接（Figma 等），要求对照设计稿核对差异、或把设计稿里的状态与规则补进用例（设计差异并入用例工作簿）
 
 Do not use this skill for pure execution reporting after test run results already exist unless the user explicitly asks for a report artifact; in that case follow the report workflow below.
 
@@ -225,6 +226,7 @@ Minimum rule:
 - for file-based inputs, first run the document-reading script when applicable
 - for long documents, read sequentially until the whole document body is covered
 - treat full reading as mandatory evidence gathering, not optional context enrichment
+- when the source carries a design-file link (Figma etc.), or the task is to diff design against requirement, also read [references/figma-design-reading.md](references/figma-design-reading.md) and gather design evidence (frames, state variants, comments) before generating or updating cases
 
 Preferred script:
 
@@ -738,6 +740,7 @@ If the user asks only for one artifact, output only that artifact plus the minim
 ## References
 
 - [references/document-reading.md](references/document-reading.md)
+- [references/figma-design-reading.md](references/figma-design-reading.md)
 - [references/test-object-analysis.md](references/test-object-analysis.md)
 - [references/specialized-test-dimensions.md](references/specialized-test-dimensions.md)
 - [references/requirement-parsing.md](references/requirement-parsing.md)

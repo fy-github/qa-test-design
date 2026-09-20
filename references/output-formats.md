@@ -21,6 +21,8 @@ Recommended tabs:
 
 `质量评分` is optional. Add it only when the user asks for quantified review, scoring, quality rating, or a case-quality portrait. It summarizes case quality and must trace low scores back to `评审建议`; it does not replace the review findings sheet.
 
+`设计差异` is optional. Add it when cases are checked against a live design file (Figma etc.) or the user asks to diff design against requirement; columns: `序号 / 差异类别 / 差异点 / 需求(wiki)口径 / 设计稿口径 / 影响用例ID / 对用例的处理建议 / 证据 / 状态`. Keep the requirement text as the assertion baseline: design-only additions become new cases, conflicts stay `待确认`. See [figma-design-reading.md](figma-design-reading.md).
+
 Recommended `全部用例` columns and order:
 
 | Column | Required | Notes |
